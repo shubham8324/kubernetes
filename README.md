@@ -56,13 +56,12 @@ Note:
 	- Once VM ready -> Go to the **Virtual machines** using left side portal menu or you can just search in search bar.
 
 
-3. **Add 6443 port in all 3 VMs inside networking**:
+3. **Add 6443 port in master VMs inside networking**:
     - In the left menu , click on **Virtual machines**.
 	- click on Master -> In left side under the Networking go and click on **Network settings**
 	- master: scroll down and in right side click on **Create port rule** to **create Inbound port rule**
 		- **Destination port ranges** -> 6443, **Priority** -> 250 **Name** -> inbound6443
-	- worker: scroll down and in right side click on **Create port rule** to **create outbound port rule**
-		- **Destination port ranges** -> 6443, **Priority** -> 250 **Name** -> outbound6443
+
 
 4. **Create a Peerings**:
     - In the left menu , click on **Virtual networks**.

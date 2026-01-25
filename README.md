@@ -33,24 +33,25 @@ Note:
     - Click to the **Create** and select first option **Virtual machines**.
 	- After clicking you will see the page where
 	- **Project details:**
-	- **Subscription**, you have to create new **Resource group** like **K8s_cluster_setup**.
-	- **Instance details:**
-	- **Virtual machine name** provide name for VM, 1st VM - Master, 2nd - Wroker1 and 3rd Worker2.
-	- **Region**: (Asia Pacific) Australia East, (Asia Pacific) Central India
-	- **Availability options**: No infrastructure redundancy required
-	- Run with Azure Spot discount: click the button to get discount, But its work 3-4 times
-	- **Size**: select somthing Standard_D2ls_v5 - 2 vcpus, 4 GiB memory ($0.01571)
-	- **Administrator account**
-	- **Authentication type** - select *SSH public key* when you want to connect with local, provide **Key pair name** - for 1st VM - Master, 2nd - Wroker1 and 3rd Worker2.
-	- **Authentication type** - select **Password** then,
-	- **Username** - for 1st VM - master, 2nd - wroker1 and 3rd worker2. and use same password for all will help to remember
+		- **Subscription**, you have to create new **Resource group** like **K8s_cluster_setup**.
+		- **Instance details:**
+			- **Virtual machine name** provide name for VM, 1st VM - Master, 2nd - Wroker1 and 3rd Worker2.
+			- **Region**: (Asia Pacific) Australia East, (Asia Pacific) Central India
+			- **Availability options**: No infrastructure redundancy required
+			- Run with Azure Spot discount: click the button to get discount, But its work 2-4 times
+			- **Size**: select somthing Standard_D2ls_v5 - 2 vcpus, 4 GiB memory ($0.01571)
+		- **Administrator account**
+			- **Authentication type** - select *SSH public key* when you want to connect with local, provide **Key pair name** - for 1st VM - Master, 2nd - Wroker1 and 3rd Worker2.
+			- **Authentication type** - select **Password** then,
+				- **Username** - for 1st VM - master, 2nd - wroker1 and 3rd worker2. and use same password for all will help you to remember.
 	- click to the Next - Disk button
 	- In **OS disk** ->OS disk type -> select **Standard SSD (locally-redundant storage)**
 	- click to the Next - Networking button
 	- In **Network interface** -> Public IP -> click on **Create New** and then ok after that ip will create -> (new) Master-ip
-	-> **Select inbound ports** -> select both "SSH (22), RDP (3389)"
+		- **Select inbound ports** -> select both "SSH (22), RDP (3389)"
 	- click to the ""Review + create""
 	- Post validation click to the ""Create""
+ - 
 	- Do it again and again to create 3 VM
 	- Once VM ready -> Go to the **Virtual machines** using left side portal menu or you can just search in search bar.
 
@@ -70,10 +71,10 @@ Note:
 		- click on Add
 		- **Peering link name**: (e.g., `master-worker1`) -> for both local and remote
 		- **Virtual network**: select worker1 network -> allow below 2
-		Allow 'vnet-eastasia' to access 'vnet-australiaeast'
-		Allow 'vnet-eastasia' to receive forwarded traffic from 'vnet-australiaeast'
-		Allow 'vnet-australiaeast' to access 'vnet-eastasia'
-		Allow 'vnet-australiaeast' to receive forwarded traffic from 'vnet-eastasia'
+			Allow 'vnet-eastasia' to access 'vnet-australiaeast'
+			Allow 'vnet-eastasia' to receive forwarded traffic from 'vnet-australiaeast'
+			Allow 'vnet-australiaeast' to access 'vnet-eastasia'
+			Allow 'vnet-australiaeast' to receive forwarded traffic from 'vnet-eastasia'
 		- **Peering link name**: (e.g., `master-worker2`) -> for both local and remote
 		- **Virtual network**: select worker2 network -> allow below 2
 

@@ -183,7 +183,13 @@ Note:
     kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/calico.yaml
     ```
 
-4. **Generate Join Command**:
+5. **10. Deploy Ingress Controller (NGINX) [On MasterNode]**
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.49.0/deploy/static/provider/baremetal/deploy.yaml
+
+```
+   
+6. **Generate Join Command**:
     ```bash
     kubeadm token create --print-join-command
     ```

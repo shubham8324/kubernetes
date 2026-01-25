@@ -5,11 +5,11 @@ This guide outlines the steps needed to set up a Kubernetes cluster using `kubea
 ## Prerequisites
 
 - Internet access
-- Azure account setup, below youtube video will help you
+- Azure account setup; the YouTube video below will help you.
  ```
 https://www.youtube.com/watch?v=byVPxyoMMPA&pp=ygUYYXp1cmUgZnJlZSBhY2NvdW50IHNldHVw
    ```
-- 3 Azure VMs required, below youtube video will help you
+- Three Azure VMs are required; the YouTube video below will help you.
 ```
 https://www.youtube.com/watch?v=dP0vNd5K2x8&pp=ygUWaG93IHRvIGNyZWF0ZSBhenVyZSB2bdgGuwLSBwkJhwoBhyohjO8%3D
    ```
@@ -23,53 +23,53 @@ https://youtu.be/oEGmaHSfcjQ
 ## Azure Setup
 Note:
 1. Expose port **6443** in the **Network setting** to allow worker nodes to join the cluster.
-2. Required **Peerings** in the **Virstual Network** to allow VMs nodes to connect with each other.
+2. Required **Peerings** in the **Virtual Network** to allow VM nodes to connect with each other.
 
 
 ## To do above setup, follow below provided steps
 
 ### Step 1: Create Virtual machines
 
-1. **Log in to the portal.azure.com **:
-    - Go to the **Virtual machines** using left side portal menu or you can just search in search bar.
+1. **Log in to portal.azure.com **:
+    - Go to **Virtual Machines** using the left-side portal menu, or search for it in the search bar.
 
 2. **To create VM**:
-    - Click to the **Create** and select first option **Virtual machines**.
-	- After clicking you will see the page where
+    - Click **Create** and select the first option, **Virtual Machines**.
+	- After clicking, you will see the page where
 	- **Project details:**
-		- **Subscription**, you have to create new **Resource group** like **K8s_cluster_setup**.
+		- **Subscription**, you have to create a new **Resource group** like **K8s_cluster_setup**.
 		- **Instance details:**
-			- **Virtual machine name** provide name for VM, 1st VM - Master, 2nd - Wroker1 and 3rd Worker2.
+			- **Virtual machine name** provide a name for VM, 1st VM - Master, 2nd - Worker1 and 3rd Worker2.
 			- **Region**: (Asia Pacific) Australia East, (Asia Pacific) Central India
 			- **Availability options**: No infrastructure redundancy required
-			- Run with Azure Spot discount: click the button to get discount, But its work 2-4 times
-			- **Size**: select somthing Standard_D2ls_v5 - 2 vcpus, 4 GiB memory ($0.01571)
+			- Run with Azure Spot discount: click the button to get a discount, but it works only 2–4 times.
+			- **Size**: select something like - Standard_D2ls_v5 - 2 vcpus, 4 GiB memory ($0.01571)
 		- **Administrator account**
-			- **Authentication type** - select *SSH public key* when you want to connect with local, provide **Key pair name** - for 1st VM - Master, 2nd - Wroker1 and 3rd Worker2.
+			- **Authentication type** - select **SSH public key** if you want to connect locally, provide **Key pair name** - for 1st VM - Master, 2nd - Wroker1 and 3rd Worker2.
 			- **Authentication type** - select **Password** then,
-				- **Username** - for 1st VM - master, 2nd - wroker1 and 3rd worker2. and use same password for all will help you to remember.
-	- click to the Next - Disk button
+				- **Username** - for 1st VM - master, 2nd - worker1 and 3rd worker2. and Using the same password for all will help you remember it.
+	- Click **Next: Disks.**
 	- In **OS disk** ->OS disk type -> select **Standard SSD (locally-redundant storage)**
 	- click to the Next - Networking button
 	- In **Network interface** -> Public IP -> click on **Create New** and then ok after that ip will create -> (new) Master-ip
 		- **Select inbound ports** -> select both "SSH (22), RDP (3389)"
-	- click to the ""Review + create""
+	- Click **Review + Create.**
 	- Post validation click to the ""Create""
  - 
-	- Do it again and again to create 3 VM
+	- Repeat the same steps to create three VMs.
 	- Once VM ready -> Go to the **Virtual machines** using left side portal menu or you can just search in search bar.
 
 
-3. **Add 6443 port in master VMs inside networking**:
-    - In the left menu , click on **Virtual machines**.
+3. **Add port 6443 in the master VM networking**:
+    - In the left menu, click **Virtual machines**.
 	- click on Master -> In left side under the Networking go and click on **Network settings**
-	- master: scroll down and in right side click on **Create port rule** to **create Inbound port rule**
+	- master: Scroll down and, on the right side, **Create port rule** to **create Inbound port rule**
 		- **Destination port ranges** -> 6443, **Priority** -> 250 **Name** -> inbound6443
 
 
 4. **Create a Peerings**:
     - In the left menu , click on **Virtual networks**.
-    - click the virtual network of master vm: (check in Virtual machine you will get the details)
+    - Click the virtual network of the master VM.: (check in Virtual machine you will get the details)
       - After open new window, scroll down and click **Peerings**
 		- click on Add
 		- **Peering link name**: (e.g., `master-worker1`) -> for both local and remote
@@ -86,14 +86,14 @@ Note:
 		- click on Add		
 		- **Peering link name**: (e.g., `worker-worker`) -> for both local and remote
 		- **Virtual network**: select worker2 network -> allow below 2		
-		Now connection stablised among all 3 VMs.
+		Now the connection is stabilized among all three VMs.
 
 
 5. **connect VMs**:
     - In the left menu , click on **Virtual machine**.
 	- click on Connect -> Connect
-		- **now you can use SSH command to connect VM**:
-		- **or you can direct connect with **Serial console**: 
+		- **Now you can use the SSH command to connect to the VM.**:
+		- **Or you can connect directly using the **Serial console**: 
 		- or you can use any other option inside **More ways to connect**
 
 
@@ -238,7 +238,7 @@ kubectl label node worker1 node-role.kubernetes.io/worker=worker
 kubectl label node worker2 node-role.kubernetes.io/worker=worker
 ```
 
-## You will able to run any kubectl command from master but not the worker node
+## You will be able to run kubectl commands from the master node, but not from the worker nodes.
 ```
 kubectl get nodes
 
@@ -249,7 +249,9 @@ E0125 05:57:00.973476    6630 memcache.go:265] couldn't get current server API g
 E0125 05:57:00.974539    6630 memcache.go:265] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
 ```
-- Run command from master node to you worker nodes
+
+## To use the kubectl command on a worker node, you have to follow the steps below.
+- Run the command from the master node to your worker nodes.
 ```
 sudo scp /etc/kubernetes/admin.conf <worker username>@<worker IP>:/home/<worker username>/admin.conf
 ```

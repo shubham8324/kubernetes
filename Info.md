@@ -132,20 +132,20 @@ The secret data on nodes is stored in tmpfs volume (tmps is a filesystem that ke
 
 
 **🎯Controllers inside Controller Manager (common ones):**
-Node Controller – monitors node health
-Replication Controller – maintains replica count
-Deployment Controller – manages ReplicaSets
-ReplicaSet Controller – manages Pods
-Job Controller – manages Jobs
-CronJob Controller – manages CronJobs
-Endpoint/EndpointSlice Controller – updates service endpoints
-ServiceAccount Controller – manages service accounts
+ Node Controller – monitors node health
+ Replication Controller – maintains replica count
+ Deployment Controller – manages ReplicaSets
+ ReplicaSet Controller – manages Pods
+ Job Controller – manages Jobs
+ CronJob Controller – manages CronJobs
+ Endpoint/EndpointSlice Controller – updates service endpoints
+ ServiceAccount Controller – manages service accounts
 
 🧩Cloud-specific controllers:
-Node Controller – checks node status with cloud provider
-Route Controller – sets up cloud network routes
-Service Controller – creates cloud Load Balancers
-Volume Controller – manages cloud disks (EBS, Azure Disk, etc.)
+ Node Controller – checks node status with cloud provider
+ Route Controller – sets up cloud network routes
+ Service Controller – creates cloud Load Balancers
+ Volume Controller – manages cloud disks (EBS, Azure Disk, etc.)
 
 
 ---

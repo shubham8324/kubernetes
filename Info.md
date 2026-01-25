@@ -389,78 +389,78 @@ kubeadm creates:
 ============> How components work
 
 🔹 kubectl / User Request Flow (Control Plane)
-kubectl / User
- → API Server
- → Authentication
- (cert / token / service-account)
- → Authorization (RBAC)
- (Role, ClusterRole, RoleBinding)
- → Admission Controllers
- (validate, mutate, enforce policy)
- → etcd
- (store object / desired state)
+- kubectl / User
+-  → API Server
+-  → Authentication
+-  (cert / token / service-account)
+-  → Authorization (RBAC)
+-  (Role, ClusterRole, RoleBinding)
+-  → Admission Controllers
+-  (validate, mutate, enforce policy)
+-  → etcd
+-  (store object / desired state)
 
 
 
 🔹 Pod Scheduling Flow
-API Server
- → Scheduler
- → watches for Pods without nodeName
- → selects best Worker Node
- → API Server
- → updates Pod with nodeName
+- API Server
+-  → Scheduler
+-  → watches for Pods without nodeName
+-  → selects best Worker Node
+-  → API Server
+-  → updates Pod with nodeName
 
 
 
 🔹 Desired State Reconciliation Flow
-API Server
- → Controller Manager
- → watches cluster state
- → compares desired vs actual state
- → creates / updates / deletes objects
- → API Server
- → persists changes in etcd
+- API Server
+-  → Controller Manager
+-  → watches cluster state
+-  → compares desired vs actual state
+-  → creates / updates / deletes objects
+-  → API Server
+-  → persists changes in etcd
 
 
 
 🔹 Pod Creation on Worker Node
-API Server
- → kubelet (on Worker)
- → reads PodSpec
- → calls Container Runtime (containerd)
- → pulls image
- → creates containers
- → calls CNI plugin
- → assigns Pod IP
- → sets up networking
+- API Server
+-  → kubelet (on Worker)
+-  → reads PodSpec
+-  → calls Container Runtime (containerd)
+-  → pulls image
+-  → creates containers
+-  → calls CNI plugin
+-  → assigns Pod IP
+-  → sets up networking
 
 
 
 🔹 Container Runtime Flow
-kubelet
- → containerd
- → pull image from registry
- → create container
- → start container
+- kubelet
+-  → containerd
+-  → pull image from registry
+-  → create container
+-  → start container
 
 
 
 🔹 Networking (CNI) Flow
-kubelet
- → CNI (Calico / Cilium)
- → assign Pod IP
- → setup routes
- → apply network policies
+- kubelet
+-  → CNI (Calico / Cilium)
+-  → assign Pod IP
+-  → setup routes
+-  → apply network policies
 
 
 
 🔹 Service & Traffic Flow (App Request)
-Client / User
- → Service (ClusterIP / NodePort / LoadBalancer)
- → kube-proxy (iptables / IPVS)
- → Pod IP
- → Container (Application)
- → Response back to Client
+- Client / User
+-  → Service (ClusterIP / NodePort / LoadBalancer)
+-  → kube-proxy (iptables / IPVS)
+-  → Pod IP
+-  → Container (Application)
+-  → Response back to Client
 
 
 
@@ -475,10 +475,10 @@ kubelet
 
 
 🧠 Ultra-short Memory Version
-User → API Server → Auth → RBAC → Admission → etcd
-API Server → Scheduler → Node selected
-API Server → kubelet → containerd + CNI
-Traffic → Service → kube-proxy → Pod → Container
+- User → API Server → Auth → RBAC → Admission → etcd
+- API Server → Scheduler → Node selected
+- API Server → kubelet → containerd + CNI
+- Traffic → Service → kube-proxy → Pod → Container
 
 
 

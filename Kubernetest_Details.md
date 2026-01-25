@@ -465,12 +465,12 @@ kubeadm creates:
 
 
 🔹 Node Health Monitoring Flow
-kubelet
- → API Server
- → updates node & pod status
- → Node Controller
- → detects NotReady node
- → reschedules Pods if needed
+- kubelet
+-  → API Server
+-  → updates node & pod status
+-  → Node Controller
+-  → detects NotReady node
+-  → reschedules Pods if needed
 
 
 

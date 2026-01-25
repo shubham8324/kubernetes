@@ -6,18 +6,20 @@ This guide outlines the steps needed to set up a Kubernetes cluster using `kubea
 
 - Internet access
 - Azure account setup, below youtube video will help you
+ ```
 https://www.youtube.com/watch?v=byVPxyoMMPA&pp=ygUYYXp1cmUgZnJlZSBhY2NvdW50IHNldHVw
-- 2 Azure VM 
+   ```
+- 3 Azure VMs required, below youtube video will help you
+```
 https://www.youtube.com/watch?v=dP0vNd5K2x8&pp=ygUWaG93IHRvIGNyZWF0ZSBhenVyZSB2bdgGuwLSBwkJhwoBhyohjO8%3D
-
+   ```
 
 ---
 
 ## Azure Setup
-
-1. Ensure that all instances are in the same **Security Group**.
-2. Expose port **6443** in the **Security Group** to allow worker nodes to join the cluster.
-3. Expose port **22** in the **Security Group** to allows SSH access to manage the instance..
+Note:
+1. Expose port **6443** in the **Network setting** to allow worker nodes to join the cluster.
+2. Required **Peerings** in the **Virstual Network** to allow VMs nodes to connect with each other.
 
 
 ## To do above setup, follow below provided steps

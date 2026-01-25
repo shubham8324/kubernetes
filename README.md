@@ -233,3 +233,26 @@ kubectl label node <node-name> node-role.kubernetes.io/worker=worker
 kubectl label node worker1 node-role.kubernetes.io/worker=worker
 kubectl label node worker2 node-role.kubernetes.io/worker=worker
 ```
+
+## You will able to run any kubectl command from master but not the worker node
+```
+kubectl get nodes
+
+E0125 05:57:00.968495    6630 memcache.go:265] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
+E0125 05:57:00.969043    6630 memcache.go:265] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
+E0125 05:57:00.971924    6630 memcache.go:265] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
+E0125 05:57:00.973476    6630 memcache.go:265] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
+E0125 05:57:00.974539    6630 memcache.go:265] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+```
+- Run command from master node to you worker nodes
+```
+sudo scp /etc/kubernetes/admin.conf <worker username>@<worker IP>:/home/<worker username>/admin.conf
+```
+
+- To create .kube config file
+```
+mkdir -p $HOME/.kube
+sudo mv /home/<worker username>/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```

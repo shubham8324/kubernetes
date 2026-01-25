@@ -125,18 +125,10 @@ The secret data on nodes is stored in tmpfs volume (tmps is a filesystem that ke
 
 
 
+![image.png](https://eraser.imgix.net/workspaces/fR2HqXW02CufT1c7rxGf/qIg1eEirBlR2rPCcuuET7nmCyCW2/image_OW4SNH3m6WNEfFv5eEVrk.png?ixlib=js-3.8.0 "image.png")
 
-```
-## Kubernetes Decision Flow
-
-**Purpose:**  
-This diagram explains how traffic and control flow behave inside the system.
-
-<p align="center">
-  <img src="https://i.ibb.co/84dd6gw6/Option-A-B-Decision-Flow-2026-01-25-065116.png" width="1000">
-</p>
-```
 ---
+
 
 
 **🎯Controllers inside Controller Manager (common ones):**

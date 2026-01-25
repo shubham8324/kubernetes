@@ -14,6 +14,10 @@ https://www.youtube.com/watch?v=byVPxyoMMPA&pp=ygUYYXp1cmUgZnJlZSBhY2NvdW50IHNld
 https://www.youtube.com/watch?v=dP0vNd5K2x8&pp=ygUWaG93IHRvIGNyZWF0ZSBhenVyZSB2bdgGuwLSBwkJhwoBhyohjO8%3D
    ```
 
+- Watch this video for a clear understanding of the k8s cluster setup:
+```
+https://youtu.be/oEGmaHSfcjQ
+```
 ---
 
 ## Azure Setup

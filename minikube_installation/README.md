@@ -1,4 +1,4 @@
-# Minikube Bootstrap -- Ubuntu 24.04
+# Minikube Bootstrap --- Ubuntu 24.04
 
 Production-ready bootstrap script to provision a local Kubernetes
 environment using **Minikube (Docker driver)** on a fresh Ubuntu 24.04
@@ -20,7 +20,7 @@ This script performs the following:
 
 The script is:
 
--   Idempotent (safe to re-run)
+-   Safe to re-run on the same host
 -   Stops on failure (`set -e`)
 -   Designed for SSH execution
 -   Architecturally correct (does not install kubelet on host)
@@ -76,6 +76,23 @@ chmod +x install_minikube_stack.sh
 
 ------------------------------------------------------------------------
 
+## Custom Resource Allocation
+
+You may optionally specify memory and CPU allocation:
+
+``` bash
+./install_minikube_stack.sh 4096 2
+```
+
+Format:
+
+    ./install_minikube_stack.sh <memory_mb> <cpus>
+
+If no arguments are provided, Minikube default resource values will be
+used.
+
+------------------------------------------------------------------------
+
 ## What the Script Does Internally
 
 ### 1. System Preparation
@@ -106,11 +123,14 @@ Creates profile:
 
     dsoc3
 
-Allocates:
+Resource allocation:
 
--   4GB Memory
--   2 CPUs
--   Docker driver
+-   Default Minikube resources (if no arguments provided)
+-   OR custom memory/CPU if passed as arguments
+
+Driver:
+
+-   Docker
 
 ### 6. Validation
 
@@ -201,7 +221,7 @@ Should show:
 If not:
 
 ``` bash
-minikube profile dsoc3
+kubectl config use-context dsoc3
 ```
 
 ------------------------------------------------------------------------

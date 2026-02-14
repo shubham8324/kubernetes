@@ -1,0 +1,15 @@
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # storageClassName omitted → default StorageClass used (standard in Minikube)
+  # In production, specify SSD class explicitly:
+  # storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 20Gi # Increase to 100Gi+ in production

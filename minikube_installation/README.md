@@ -1,155 +1,183 @@
 # Minikube Bootstrap --- Ubuntu 24.04
 
 Production-ready bootstrap script to provision a local Kubernetes
-environment using **Minikube (Docker driver)** on a fresh Ubuntu 24.04
-machine.
+environment using **Minikube (Docker or None driver)** on Ubuntu 24.04.
 
 ------------------------------------------------------------------------
 
 ## Overview
 
-This script performs the following:
+This script provisions a complete single-node Kubernetes lab with:
 
--   System preparation (packages + updates)
--   Docker installation and configuration
+-   System preparation (updates + base packages)
+-   Swap disable (mandatory for Kubernetes)
+-   Docker installation (if Docker driver selected)
 -   kubectl installation
 -   Minikube installation
--   Cluster creation (`dsoc3` profile)
--   Cluster validation
--   kubelet verification inside the Minikube node
+-   Cluster creation using selected driver
+-   Profile-based cluster management (`dsoc3`)
+-   Cluster validation & status checks
+-   Azure VM exposure guidance
 
-The script is:
+The script:
 
--   Safe to re-run on the same host
 -   Stops on failure (`set -e`)
--   Designed for SSH execution
--   Architecturally correct (does not install kubelet on host)
+-   Is safe to re-run
+-   Supports Docker and None drivers
+-   Supports custom CPU and memory allocation
 
 ------------------------------------------------------------------------
 
-## Architecture Clarification
+## Supported Drivers
 
--   **Minikube** → Local single-node Kubernetes cluster\
--   **kubectl** → Kubernetes CLI client (runs on host)\
--   **kubelet** → Node agent (runs inside Minikube node)\
--   You do NOT manually install kubelet on the host.
-
-------------------------------------------------------------------------
-
-## Prerequisites
-
-### System Requirements
-
--   Ubuntu 24.04 (fresh install recommended)
--   Minimum:
-    -   2 vCPU
-    -   4GB RAM
-    -   20GB disk
--   Internet connectivity
-
-### If Running in Cloud VM
-
-Ensure:
-
--   Instance has at least 2 CPU / 4GB RAM
--   No restrictive container runtime policies
--   Security group/firewall allows outbound internet access
+  Driver   Description
+  -------- -------------------------------------------------------
+  docker   Runs Kubernetes inside Docker container
+  none     Runs Kubernetes directly on host (VM/Bare Metal mode)
 
 ------------------------------------------------------------------------
 
-## Installation Methods
+## Usage
 
-### Option 1 --- Direct SSH Execution (Recommended)
+### Default (Docker driver)
 
 ``` bash
-ssh user@remote-host 'bash -s' < install_minikube_stack.sh
+bash minikube.sh
 ```
 
-------------------------------------------------------------------------
-
-### Option 2 --- Copy & Execute on Server
+### Custom CPU & Memory (Docker driver)
 
 ``` bash
-chmod +x install_minikube_stack.sh
-./install_minikube_stack.sh
+bash minikube.sh 4096 2 docker
 ```
 
-------------------------------------------------------------------------
-
-## Custom Resource Allocation
-
-You may optionally specify memory and CPU allocation:
+### None Driver (VM Mode)
 
 ``` bash
-./install_minikube_stack.sh 4096 2
+bash minikube.sh "" "" none
 ```
 
 Format:
 
-    ./install_minikube_stack.sh <memory_mb> <cpus>
+``` bash
+bash minikube.sh <memory_mb> <cpus> <driver>
+```
 
-If no arguments are provided, Minikube default resource values will be
-used.
+Driver values:
+
+    docker
+    none
 
 ------------------------------------------------------------------------
 
-## What the Script Does Internally
+## What the Script Configures
 
-### 1. System Preparation
+### 1️⃣ System Preparation
 
--   Updates OS
--   Installs base dependencies
+-   Updates OS packages
+-   Installs curl, wget, conntrack, certificates
+-   Disables swap permanently
 
-### 2. Docker Installation
+### 2️⃣ Docker (Docker Driver Only)
 
--   Installs `docker.io`
+-   Installs docker.io
 -   Enables and starts service
 -   Adds user to docker group
--   Validates with `hello-world`
 
-### 3. kubectl Installation
+⚠ Logout/login may be required after Docker install.
 
--   Downloads latest stable binary
--   Installs to `/usr/local/bin`
+### 3️⃣ kubectl
 
-### 4. Minikube Installation
+-   Installs latest stable binary
+-   Places in `/usr/local/bin`
 
--   Downloads latest release
--   Installs globally
+### 4️⃣ Minikube
 
-### 5. Cluster Creation
+-   Installs latest release
+-   Starts cluster with selected driver
+-   Applies profile: `dsoc3`
 
-Creates profile:
-
-    dsoc3
-
-Resource allocation:
-
--   Default Minikube resources (if no arguments provided)
--   OR custom memory/CPU if passed as arguments
-
-Driver:
-
--   Docker
-
-### 6. Validation
+### 5️⃣ Validation
 
 ``` bash
 kubectl get nodes
+minikube status -p dsoc3
 ```
 
 Expected:
 
     dsoc3   Ready   control-plane
 
-### 7. kubelet Verification (Correct Layer)
+------------------------------------------------------------------------
+
+## Architecture Clarification
+
+Host VM ↓ Minikube Profile (dsoc3) ↓ Single Kubernetes Node ↓ Control
+Plane + Kubelet
+
+-   kubelet runs inside Minikube node
+-   kubectl runs on host
+-   No manual kubelet installation required
+
+------------------------------------------------------------------------
+
+## Azure VM Network Access (Prometheus Example)
+
+If exposing services externally:
+
+### 1️⃣ Add Azure NSG Inbound Rule
+
+Azure Portal → VM → Networking → Add inbound rule:
+
+-   Protocol: TCP
+-   Port: 9090 or 30090
+-   Action: Allow
+
+------------------------------------------------------------------------
+
+### 2️⃣ Port Forward (Optional)
 
 ``` bash
-minikube ssh -p dsoc3
-sudo systemctl status kubelet
+kubectl port-forward -n monitoring svc/prometheus-service 9090:9090 --address 0.0.0.0
 ```
 
-This confirms kubelet runs inside the Minikube node, not on the host.
+or
+
+``` bash
+kubectl port-forward -n monitoring svc/prometheus-service 30090:9090 --address 0.0.0.0
+```
+
+------------------------------------------------------------------------
+
+### 3️⃣ Verify Port Listening
+
+``` bash
+sudo ss -tulnp | grep 9090
+sudo ss -tulnp | grep 30090
+```
+
+------------------------------------------------------------------------
+
+### 4️⃣ UFW Firewall (If Active)
+
+``` bash
+sudo ufw status
+sudo ufw allow 9090/tcp
+sudo ufw allow 30090/tcp
+```
+
+------------------------------------------------------------------------
+
+### 5️⃣ Get Public IP
+
+``` bash
+curl ifconfig.me
+```
+
+Access:
+
+    http://VM_PUBLIC_IP:9090
+    http://VM_PUBLIC_IP:30090
 
 ------------------------------------------------------------------------
 
@@ -173,85 +201,53 @@ List profiles:
 minikube profile list
 ```
 
-Check cluster status:
+Get cluster IP:
 
 ``` bash
-minikube status -p dsoc3
+minikube ip
+minikube ip -p dsoc3
+```
+
+Open dashboard:
+
+``` bash
+minikube dashboard -p dsoc3
 ```
 
 ------------------------------------------------------------------------
 
 ## Troubleshooting
 
-### Docker Permission Issues
-
-If you see permission denied errors:
+### Docker Permission Issue
 
 ``` bash
 newgrp docker
 ```
 
-Or re-login to refresh group membership.
+or logout/login again.
 
 ------------------------------------------------------------------------
 
-### Cluster Not Starting
+### None Driver kubectl Permission Fix
 
-Check:
+``` bash
+sudo chown -R $USER:$USER ~/.kube ~/.minikube
+```
+
+------------------------------------------------------------------------
+
+### Cluster Logs
 
 ``` bash
 minikube logs -p dsoc3
-docker ps
 ```
 
 ------------------------------------------------------------------------
 
-### kubectl Not Connecting
-
-Verify context:
-
-``` bash
-kubectl config current-context
-```
-
-Should show:
-
-    dsoc3
-
-If not:
-
-``` bash
-kubectl config use-context dsoc3
-```
-
-------------------------------------------------------------------------
-
-## Reset / Clean Install
-
-Completely wipe environment:
+## Reset Environment
 
 ``` bash
 minikube delete --all --purge
-```
-
-Optional full Docker cleanup:
-
-``` bash
-sudo systemctl stop docker
-sudo rm -rf /var/lib/docker
-```
-
-------------------------------------------------------------------------
-
-## Version Verification
-
-Check installed versions:
-
-``` bash
-docker --version
-kubectl version --client
-minikube version
-kubectl get nodes
 ```
 
 ------------------------------------------------------------------------
@@ -259,8 +255,9 @@ kubectl get nodes
 ## Security Considerations
 
 -   Docker group grants root-equivalent privileges.
--   Do not run on shared production servers.
--   This setup is for local development, testing, and learning.
+-   Prometheus has no authentication by default.
+-   Do not expose monitoring tools publicly without protection.
+-   This environment is for lab/testing --- not production workloads.
 
 ------------------------------------------------------------------------
 
@@ -268,12 +265,6 @@ kubectl get nodes
 
 -   Kubernetes learning
 -   SRE lab environments
--   CI experimentation
--   API testing
--   Local deployment simulation
-
-Not intended for:
-
--   Production workloads
--   Multi-node HA clusters
--   Enterprise-grade orchestration
+-   Cloud VM experimentation
+-   Monitoring stack testing
+-   CI/CD experimentation

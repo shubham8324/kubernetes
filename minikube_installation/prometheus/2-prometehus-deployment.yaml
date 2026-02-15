@@ -30,7 +30,7 @@ spec:
             # WAL optimization
             - "--storage.tsdb.wal-compression"
             # Web security
-            - "--web.config.file=/prometheus/web.yml"
+            # - --web.config.file=/prometheus/web.yml
             - "--web.enable-lifecycle"
           ports:
             - containerPort: 9090

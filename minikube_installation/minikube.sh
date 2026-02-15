@@ -1,7 +1,7 @@
 
 #!/bin/bash
 
-set -euo pipefail
+set -e pipefail
 
 PROFILE="dsoc3"
 MEMORY=${1:-""}
@@ -85,15 +85,37 @@ kubectl version --client
 # Install Docker (If Docker Driver)
 ############################################
 if [[ "$DRIVER" == "docker" ]]; then
+
   if ! command -v docker &> /dev/null; then
     echo "Installing Docker..."
     sudo apt install -y docker.io
     sudo systemctl enable docker
     sudo systemctl start docker
+  fi
+
+  # Ensure docker group exists
+  if ! getent group docker > /dev/null; then
+    sudo groupadd docker
+  fi
+
+  # Add user to docker group if not already
+  if ! groups $USER | grep -q docker; then
+    echo "Adding $USER to docker group..."
     sudo usermod -aG docker $USER
-    echo "⚠ Logout/login required if docker permission error occurs."
+    echo ""
+    echo "You must logout and login again for docker group to apply."
+    echo "Then re-run the script."
+    newgrp docker
+  fi
+
+  # Validate docker access
+  if ! docker ps > /dev/null 2>&1; then
+    echo "Docker installed but permission denied."
+    echo "Logout/login required."
+    exit 1
   fi
 fi
+
 
 ############################################
 # Install Minikube
@@ -126,7 +148,7 @@ else
   else
     minikube start \
       --driver=docker \
-      --disk-size=20g \
+      --disk-size=4g \
       --profile $PROFILE \
       --wait=all
   fi
@@ -178,4 +200,5 @@ echo "  curl ifconfig.me"
 
 echo ""
 echo "Setup Completed Successfully."
+
 

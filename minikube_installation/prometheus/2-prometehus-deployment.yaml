@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,19 +18,19 @@ spec:
         fsGroup: 65534
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.51.1
+          image: prom/prometheus:v2.51.1			
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus"
-            - "--storage.tsdb.retention.time=15d" # Increase to 30d+ in production
-			#- --storage.tsdb.retention.size=80GB # Retention control size protection
-			# TSDB block tuning (keep default 2h)
-			- --storage.tsdb.min-block-duration=2h
-			- --storage.tsdb.max-block-duration=2h
-			# WAL optimization
-			- --storage.tsdb.wal-compression
-			# Web security
-			- --web.config.file=/prometheus/web.yml
+            - "--storage.tsdb.retention.time=15d"# Increase to 30d+ in production
+            # - "--storage.tsdb.retention.size=2GB" # Retention control size protection
+            # TSDB block tuning
+            - "--storage.tsdb.min-block-duration=2h"
+            - "--storage.tsdb.max-block-duration=2h"
+            # WAL optimization
+            - "--storage.tsdb.wal-compression"
+            # Web security
+            - "--web.config.file=/prometheus/web.yml"
             - "--web.enable-lifecycle"
           ports:
             - containerPort: 9090

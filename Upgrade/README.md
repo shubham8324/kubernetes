@@ -53,8 +53,15 @@ strategy designed for senior engineers operating real-world clusters.
 
 ## Confirm Current State
 ```bash
-kubectl version
 kubectl get nodes -o wide
+kubectl version
+kubectl get --raw='/readyz?verbose'
+kubectl get --raw='/livez?verbose'
+kubectl get pods -A
+
+----Runtime validation
+containerd --version
+crictl info
 ```
 ## Version Path
 
@@ -106,7 +113,7 @@ kubectl get sc -o yaml
 
 kubectl get pods -A | grep -i ingress
 kubectl get pods -n kube-system | grep metrics
-kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].spec.containers[0].image}'
+kubectl -n kube-system get pod -l tier=control-plane -l component=etcd -o jsonpath='{.items[0].spec.containers[0].image}'
 
 ````
 
@@ -114,9 +121,9 @@ kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].spec.co
 
 > Check etcd image and endpoint health before proceeding.
 ```bash
-kubectl -n kube-system exec -it $(kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].metadata.name}') -- etcdctl endpoint health
+kubectl -n kube-system exec -it $(kubectl -n kube-system get pod -l tier=control-plane -l component=etcd -o jsonpath='{.items[0].metadata.name}') -- etcdctl endpoint health
 
-kubectl -n kube-system exec -it $(kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].metadata.name}') -- \
+kubectl -n kube-system exec -it $(kubectl -n kube-system get pod -l tier=control-plane -l component=etcd -o jsonpath='{.items[0].metadata.name}') -- \
 sh -c "ETCDCTL_API=3 etcdctl \
 --endpoints=https://127.0.0.1:2379 \
 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
@@ -141,18 +148,18 @@ correct output - /usr/bin/etcdctl
 
 sudo -i
 
-ETCDCTL_API=3 /usr/bin/etcdctl snapshot save /root/etcd-pre-1.30.db \
+ETCDCTL_API=3 etcdctl \
 --endpoints=https://127.0.0.1:2379 \
 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
 --cert=/etc/kubernetes/pki/etcd/server.crt \
---key=/etc/kubernetes/pki/etcd/server.key
+--key=/etc/kubernetes/pki/etcd/server.key \
+snapshot save /root/etcd-pre-1.30.db
 
-or
-
-ETCDCTL_API=3 etcdctl snapshot save /root/etcd-pre-1.30.db
 
 Then verify –
 ETCDCTL_API=3 etcdctl snapshot status /root/etcd-pre-1.30.db
+ETCDCTL_API=3 etcdctl endpoint status --write-out=table
+
 
 ## Export Baseline State
 
@@ -224,34 +231,68 @@ sudo systemctl start kubelet
 
 Per control-plane node (sequential):
 
+0.  Drain node(if anything running)
+```bash
+kubectl cordon <node>
+kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+```
+
 1.  Update repo with target version
 
 ```bash
-pt-cache madison kubeadm
-cat /etc/apt/sources.list.d/kubernetes.list
+apt-cache madison kubeadm
+
 sudo sed -i 's/v1.29/v1.30/g' /etc/apt/sources.list.d/kubernetes.list
-cat /etc/apt/sources.list.d/kubernetes.list
+
+or
+
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | \
+sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] \
+https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /" | \
+sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+----------------update
 sudo apt-get update
 apt-cache madison kubeadm | grep 1.30
+
+cat /etc/apt/sources.list.d/kubernetes.list
 
 ```
 3.  Install kubeadm target version
 ```bash
-sudo apt-get install -y kubeadm=1.30.x-*
+
+sudo apt-mark unhold kubeadm
+sudo apt-get install -y kubeadm=1.30.14-1.1
+sudo apt-mark hold kubeadm
 kubeadm version
 
+----Pre-pull Images
+sudo kubeadm config images pull
 ```
+
 5.  kubeadm upgrade plan
 ```bash
 sudo kubeadm upgrade plan
 ```
 6.  kubeadm upgrade apply
 ```bash
-sudo kubeadm upgrade apply v1.30.x
+sudo kubeadm upgrade apply v1.30.14
+
+Note: Use above command, only first control-plan 
+
+for rest use below
+
+sudo kubeadm upgrade node
+
 ```
 7.  Upgrade kubelet + kubectl
 ```bash
+sudo apt-mark unhold kubelet kubectl
 sudo apt-get install -y kubelet=1.30.14-1.1 kubectl=1.30.14-1.1
+sudo apt-mark hold kubelet kubectl
 ```
 8.  Restart kubelet
 ```bash
@@ -259,6 +300,14 @@ sudo systemctl restart kubelet
 ```
 
 9. Validate cluster health after each node.
+```bash
+kubectl get nodes
+kubectl get pods -n kube-system
+kubectl get ds kube-proxy -n kube-system 
+kubectl get deployment coredns -n kube-system -o yaml | grep image
+kubectl get --raw='/readyz?verbose'
+
+```
 
 10. Repeat per control-plane node (one by one)
 
@@ -271,17 +320,14 @@ Per worker node:
 1.  Drain node
 ```bash
 kubectl cordon <node>
-kubectl drain <node> --ignore-daemonsets -delete-emptydir-data
+kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
 ```
 2. Upgrade kubeadm
 ```bash
-sudo apt-mark unhold kubeadm kubelet kubectl
+sudo apt-mark unhold kubeadm
 sudo apt-get update
 sudo apt-get install -y kubeadm=1.30.14-1.1
-
-or
-
-sudo apt-get install -y kubeadm=1.30.14-1.1 --allow-downgrades --allow-change-held-packages
+sudo apt-mark hold kubeadm
 
 ```
 > kubeadm version
@@ -293,7 +339,10 @@ sudo kubeadm upgrade node
 ```
 4.  Upgrade kubelet
 ```bash
+sudo apt-mark unhold kubelet kubectl
 sudo apt-get install -y kubelet=1.30.14-1.1 kubectl=1.30.14-1.1
+sudo apt-mark hold kubelet kubectl
+sudo systemctl restart kubelet
 ```
 5.  Restart kubelet
 ```bash
@@ -306,6 +355,9 @@ kubectl uncordon worker
 7. Validate pods rescheduled cleanly
 ```bash
 kubectl get nodes
+kubectl get pods -A
+kubectl get events -A --sort-by=.lastTimestamp
+kubectl get apfconfigurations 
 ```
 
 > Upgrade one worker at a time.
@@ -335,7 +387,9 @@ kubectl describe node worker
 kubectl get events -A --sort-by=.lastTimestamp
 
 
-sudo ETCDCTL_API=3 /usr/bin/etcdctl \
+Note: If etcd local check needed (run on CP1):
+
+sudo ETCDCTL_API=3 etcdctl \
 --endpoints=https://127.0.0.1:2379 \
 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
 --cert=/etc/kubernetes/pki/etcd/server.crt \

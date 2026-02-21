@@ -7,20 +7,10 @@
 
 ## Executive Summary
 
-Kubernetes upgrades are distributed system state transitions --- not
-package updates.
+Kubernetes upgrades are distributed system state transitions --- not package updates.
 
-In HA environments (3+ control-plane, quorum-based etcd), upgrades
-affect:
 
--   API server consistency
--   etcd quorum stability
--   CNI dataplane behavior
--   Stateful workload integrity
--   Autoscaling behavior
-
-This runbook provides a reversible, observable, production-safe upgrade
-strategy designed for senior engineers operating real-world clusters.
+This runbook provides a reversible, observable, production-safe upgrade strategy designed for senior engineers operating real-world clusters.
 
 ------------------------------------------------------------------------
 

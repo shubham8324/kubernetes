@@ -535,16 +535,15 @@ Upgrade order:
 
 ------------------------------------------------------------------------
 
-# Risk Matrix
+## ⚠️ Upgrade Risk Matrix
 
-  Risk                     Impact     Mitigation
-  ------------------------ ---------- --------------------------
-  Deprecated API break     High       Scan before upgrade
-  etcd corruption          Critical   Snapshot + test restore
-  PDB misconfig            High       Audit before drain
-  CNI incompatibility      High       Validate version support
-  Version skew violation   High       Respect skew policy
-
+| Risk                     | Impact    | Mitigation                          |
+|--------------------------|-----------|-------------------------------------|
+| Deprecated API break     | High      | Scan and migrate before upgrade     |
+| etcd corruption          | Critical  | Take snapshot and test restore      |
+| PDB misconfiguration     | High      | Audit workloads before draining     |
+| CNI incompatibility      | High      | Validate CNI version support        |
+| Version skew violation   | High      | Follow Kubernetes skew policy       |
 
 ------------------------------------------------------------------------
 

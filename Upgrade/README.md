@@ -18,12 +18,12 @@ This runbook provides a reversible, observable, production-safe upgrade strategy
 
 ## Assumptions
 
-  Component       Design
-  --------------- -------------------------
-  Control Plane   3 nodes minimum
-  etcd            quorum-based
-  Workers         Rolling upgrade
-  Upgrade Model   Sequential minor only
+| Component      | Design                 |
+|---------------|------------------------|
+| Control Plane | 3 nodes minimum        |
+| etcd          | quorum-based           |
+| Workers       | Rolling upgrade        |
+| Upgrade Model | Sequential minor only  |
 
 ------------------------------------------------------------------------
 

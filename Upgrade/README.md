@@ -64,7 +64,7 @@ https://github.com/kubernetes-sigs/metrics-server#compatibility-matrix
 - No PDBs = upgrade risk
 - CNI incompatibility = networking failure
 - CSI mismatch = storage attach/detach failure
-- 
+  
 ------------------------------------------------------------------------
 
 # PHASE 0 --- Change Control

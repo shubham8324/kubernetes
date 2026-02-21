@@ -62,6 +62,14 @@ kubectl get pods -A
 ----Runtime validation
 containerd --version
 crictl info
+kubeadm config view
+kubectl -n kube-system get cm kubeadm-config -o yaml
+systemctl status containerd
+cat /etc/containerd/config.toml | grep SystemdCgroup
+
+- If SystemdCgroup=false on systemd host → kubelet instability.
+
+---Check certs expiry
 ```
 ## Version Path
 
@@ -83,6 +91,12 @@ kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis
 Static scan:
 kubectl get all -A -o yaml | grep apiVersion | grep v1beta
 kubectl get crd -o yaml | grep v1beta
+
+
+cat /etc/kubernetes/manifests/kube-apiserver.yaml
+kubectl -n kube-system get cm kube-proxy -o yaml
+
+
 ```
 - If any deprecated APIs exist → STOP and migrate.
 - If Output Exists: We must fix that before upgrade.
@@ -138,7 +152,7 @@ endpoint health"
 # PHASE 2 --- Safety Preparation
 
 ## etcd Snapshot
-
+```bash
 sudo apt update
 sudo apt install -y etcd-client
 
@@ -154,15 +168,22 @@ ETCDCTL_API=3 etcdctl \
 --cert=/etc/kubernetes/pki/etcd/server.crt \
 --key=/etc/kubernetes/pki/etcd/server.key \
 snapshot save /root/etcd-pre-1.30.db
-
+```
 
 Then verify –
+```bash
 ETCDCTL_API=3 etcdctl snapshot status /root/etcd-pre-1.30.db
 ETCDCTL_API=3 etcdctl endpoint status --write-out=table
+```
 
+## Static Pod Manifest and PKI Backup
+```bash
+/etc/kubernetes/manifests/*
+/etc/kubernetes/pki/
+```
 
 ## Export Baseline State
-
+```bash
 kubectl get nodes -o wide > before-nodes.txt
 kubectl get pods -A -o wide > before-pods.txt
 kubectl get deployments -A > before-deployments.txt
@@ -170,11 +191,11 @@ kubectl get statefulsets -A > before-statefulsets.txt
 kubectl get ds -A > before-daemonsets.txt
 kubectl get sc > before-storageclasses.txt
 kubectl get pv > before-pv.txt
-
+```
 ## Validate PDBs
-
+```bash
 kubectl get pdb -A
-
+```
 If empty → fine.
 Calico controller can tolerate 1 pod disruption.
 
@@ -281,13 +302,13 @@ sudo kubeadm upgrade plan
 ```bash
 sudo kubeadm upgrade apply v1.30.14
 
-Note: Use above command, only first control-plan 
-
-for rest use below
-
-sudo kubeadm upgrade node
 
 ```
+Note: Use above command, only first control-plan, For rest use below
+```bash
+sudo kubeadm upgrade node
+```
+
 7.  Upgrade kubelet + kubectl
 ```bash
 sudo apt-mark unhold kubelet kubectl
@@ -305,8 +326,14 @@ kubectl get nodes
 kubectl get pods -n kube-system
 kubectl get ds kube-proxy -n kube-system 
 kubectl get deployment coredns -n kube-system -o yaml | grep image
+
+---API Health
 kubectl get --raw='/readyz?verbose'
 
+---etcd Quorum
+kubectl -n kube-system exec -it \
+$(kubectl -n kube-system get pod -l component=etcd -o jsonpath='{.items[0].metadata.name}') \
+-- etcdctl endpoint status --write-out=table
 ```
 
 10. Repeat per control-plane node (one by one)
@@ -350,7 +377,7 @@ sudo systemctl restart kubelet
 ```
 6.  kubectl uncordon <node>
 ```bash
-kubectl uncordon worker
+kubectl uncordon <node>
 ```
 7. Validate pods rescheduled cleanly
 ```bash
@@ -385,7 +412,10 @@ kubectl get pods -n kube-system
 kubectl describe node master
 kubectl describe node worker
 kubectl get events -A --sort-by=.lastTimestamp
-
+kubectl get deploy -A -o yaml | grep maxUnavailable
+kubectl describe node <node> | grep -i pressure
+kubectl top nodes
+kubectl top pods -A
 
 Note: If etcd local check needed (run on CP1):
 
